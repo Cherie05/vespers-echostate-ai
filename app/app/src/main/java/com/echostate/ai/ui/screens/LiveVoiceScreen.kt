@@ -22,6 +22,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.platform.LocalContext
 import java.util.Locale
 
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+
 @Composable
 fun LiveVoiceScreen(
     viewModel: EchoStateViewModel,
@@ -46,7 +50,7 @@ fun LiveVoiceScreen(
         speechRecognizer.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {
                 isListening = true
-                viewModel.speak("I am listening...")
+                viewModel.speak("Listening. Start speaking.")
             }
             override fun onBeginningOfSpeech() {}
             override fun onRmsChanged(rmsdB: Float) {}
@@ -56,7 +60,7 @@ fun LiveVoiceScreen(
             }
             override fun onError(error: Int) {
                 isListening = false
-                viewModel.speak("Could not hear you. Tap the mic to try again.")
+                viewModel.speak("Could not hear you. Tap the screen to try again.")
             }
             override fun onResults(results: Bundle?) {
                 isListening = false
@@ -79,93 +83,69 @@ fun LiveVoiceScreen(
         viewModel.startVoiceMode()
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212))
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            if (isListening) "Listening..." else "Gemini Live Assistant",
-            color = if (isListening) Color(0xFFFF9800) else Color(0xFF388E3C),
-            fontSize = 26.sp
-        )
-
-        // Interactive Mic Button
-        Box(
-            modifier = Modifier
-                .size(160.dp)
-                .background(
-                    if (isListening) Color(0xFFFF9800).copy(alpha = 0.3f) else Color(0xFF388E3C).copy(alpha = 0.3f),
-                    CircleShape
-                )
-                .padding(20.dp)
-                .background(
-                    if (isListening) Color(0xFFFF9800) else Color(0xFF388E3C),
-                    CircleShape
-                )
-                .clickable {
-                    if (isListening) {
-                        speechRecognizer.stopListening()
-                        isListening = false
-                    } else {
-                        speechRecognizer.startListening(intent)
+            .background(Color.Black)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = {
+                        if (isListening) {
+                            speechRecognizer.stopListening()
+                            isListening = false
+                        } else {
+                            speechRecognizer.startListening(intent)
+                        }
                     }
-                },
-            contentAlignment = Alignment.Center
-        ) {
-            Text(if (isListening) "👂" else "🎤", fontSize = 60.sp)
-        }
-
-        Text(
-            text = "Tap microphone to speak to Gemini",
-            color = Color.LightGray,
-            fontSize = 16.sp
-        )
-
-        // Output Display Card
-        Surface(
-            modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp),
-            color = Color.Black,
-            shape = MaterialTheme.shapes.medium
-        ) {
-            Box(modifier = Modifier.padding(16.dp), contentAlignment = Alignment.Center) {
-                Text(
-                    text = currentSpeech,
-                    color = Color.Yellow,
-                    fontSize = 18.sp,
-                    textAlign = TextAlign.Center
                 )
             }
-        }
-
-        // Quick query suggestions
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Button(
-                onClick = { viewModel.askVoiceAssistant("What is in front of me?") },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
-            ) {
-                Text("What's near?", fontSize = 12.sp)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragEnd = { /* handle */ }
+                ) { change, dragAmount ->
+                    change.consume()
+                    val (x, y) = dragAmount
+                    if (y > 50 && kotlin.math.abs(y) > kotlin.math.abs(x)) {
+                        // Swipe Down -> Go Back
+                        viewModel.speak("Closing Voice Mode.")
+                        onBack()
+                    }
+                }
             }
-            Button(
-                onClick = { viewModel.askVoiceAssistant("Is there an obstacle or doorway ahead?") },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
-            ) {
-                Text("Find Door", fontSize = 12.sp)
-            }
-        }
-
-        Button(
-            onClick = onBack,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Back to Home", color = Color.White, fontSize = 18.sp)
+            Text(
+                "Voice Mode Active",
+                color = Color.Green,
+                fontSize = 24.sp,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            Text(
+                if (isListening) "Listening... Speak now." else "Tap anywhere to speak.",
+                color = if (isListening) Color(0xFFFF9800) else Color.White,
+                fontSize = 20.sp,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                "Swipe down to go back.",
+                color = Color.LightGray,
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            Text(
+                text = currentSpeech,
+                color = Color.Yellow,
+                fontSize = 20.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(16.dp)
+            )
         }
     }
 }

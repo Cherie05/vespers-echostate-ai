@@ -12,6 +12,10 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.echostate.ai.viewmodel.EchoStateViewModel
 import androidx.compose.ui.unit.dp
 
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+
 @Composable
 fun CameraScreen(
     viewModel: EchoStateViewModel,
@@ -21,41 +25,56 @@ fun CameraScreen(
     val context = LocalContext.current
     val currentSpeech = viewModel.spokenText.collectAsState().value
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Box(modifier = Modifier.weight(1f)) {
-            AndroidView(
-                factory = { ctx ->
-                    val previewView = PreviewView(ctx)
-                    viewModel.startCamera(lifecycleOwner, previewView.surfaceProvider)
-                    previewView
-                },
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = {
+                        viewModel.analyzeCurrentCameraScene()
+                    }
+                )
+            }
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragEnd = { /* handle */ }
+                ) { change, dragAmount ->
+                    change.consume()
+                    val (x, y) = dragAmount
+                    if (y > 50 && kotlin.math.abs(y) > kotlin.math.abs(x)) {
+                        // Swipe Down -> Go Back
+                        viewModel.speak("Closing Camera Mode.")
+                        onBack()
+                    }
+                }
+            }
+    ) {
+        AndroidView(
+            factory = { ctx ->
+                val previewView = PreviewView(ctx)
+                viewModel.startCamera(lifecycleOwner, previewView.surfaceProvider)
+                previewView
+            },
+            modifier = Modifier.fillMaxSize()
+        )
         
-        Surface(color = Color.Black, modifier = Modifier.fillMaxWidth()) {
+        // Semi-transparent overlay to show instructions and text
+        Surface(
+            color = Color.Black.copy(alpha = 0.6f),
+            modifier = Modifier.fillMaxWidth().align(androidx.compose.ui.Alignment.BottomCenter)
+        ) {
             Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Camera Active. Tap anywhere to describe scene. Swipe down to go back.",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = currentSpeech,
                     color = Color.Yellow,
                     style = MaterialTheme.typography.titleMedium
                 )
-                Spacer(modifier = Modifier.height(12.dp))
-                Button(
-                    onClick = { viewModel.analyzeCurrentCameraScene() },
-                    modifier = Modifier.fillMaxWidth().height(60.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
-                ) {
-                    Text("📸 Describe Scene with Gemini", color = Color.White, style = MaterialTheme.typography.titleMedium)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = onBack,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
-                ) {
-                    Text("Close Camera")
-                }
             }
         }
     }
