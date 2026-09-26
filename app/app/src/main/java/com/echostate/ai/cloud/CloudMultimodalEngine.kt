@@ -75,6 +75,8 @@ class CloudMultimodalEngine {
                 onResult("Network unavailable. Relying on local Gemma 4.")
             }
         }
+    }
+
     fun askQuestion(prompt: String, onResult: (String) -> Unit) {
         scope.launch {
             try {
