@@ -54,7 +54,7 @@ class EchoStateViewModel : ViewModel() {
         
         // Setup Camera for Multimodal input (10 FPS)
         cameraManager = CameraManager(context, agentEngine!!)
-        cameraManager?.startCamera(lifecycleOwner)
+        // Camera will be started when CameraScreen mounts
         
         // Setup Braille Screen Input
         brailleInputHandler = BrailleInputHandler(this)
@@ -83,6 +83,25 @@ class EchoStateViewModel : ViewModel() {
         _spokenText.value = "Document centered. Reading: 'Ibuprofen 200mg'."
         cloudEngine?.synthesizeSpeech("Document centered. Ibuprofen 200mg") {
             // Audio ready
+        }
+    }
+
+    fun startCamera(lifecycleOwner: LifecycleOwner, surfaceProvider: androidx.camera.core.Preview.SurfaceProvider) {
+        cameraManager?.startCamera(lifecycleOwner, surfaceProvider)
+    }
+
+    fun startVoiceMode() {
+        _spokenText.value = "Voice Assistant Active..."
+        audioEngine?.speakOnline("{\"action\": \"text_prompt\", \"text\": \"Hello, how can I help you today?\"}")
+    }
+
+    fun captureImageForVoice(bitmap: android.graphics.Bitmap) {
+        _spokenText.value = "Analyzing scene..."
+        cloudEngine?.analyzeScene(bitmap) { description ->
+            _spokenText.value = description
+            cloudEngine?.synthesizeSpeech(description) {
+                // Play audio
+            }
         }
     }
 }

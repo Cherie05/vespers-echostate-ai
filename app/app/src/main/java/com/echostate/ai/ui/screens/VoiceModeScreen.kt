@@ -24,7 +24,9 @@ import com.echostate.ai.viewmodel.EchoStateViewModel
 fun VoiceModeScreen(
     viewModel: EchoStateViewModel,
     onNavigateToBraille: () -> Unit,
-    onNavigateToTwoWay: () -> Unit
+    onNavigateToTwoWay: () -> Unit,
+    onNavigateToCamera: () -> Unit,
+    onNavigateToVoice: () -> Unit
 ) {
     val currentSpeech = viewModel.spokenText.collectAsState().value
     val backendStatus = viewModel.backendStatus.collectAsState().value
@@ -55,7 +57,7 @@ fun VoiceModeScreen(
 
         // Large Camera/Vision Mode Button
         Button(
-            onClick = { viewModel.simulateCameraCentered() },
+            onClick = { onNavigateToCamera() },
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
@@ -73,7 +75,7 @@ fun VoiceModeScreen(
 
         // Large Voice Mode Button
         Button(
-            onClick = { /* Connect to Voice Live Engine */ },
+            onClick = { onNavigateToVoice() },
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)

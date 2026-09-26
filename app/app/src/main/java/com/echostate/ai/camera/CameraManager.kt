@@ -15,12 +15,16 @@ class CameraManager(
     private val context: Context,
     private val agentEngine: AgentLoopEngine
 ) {
-    fun startCamera(lifecycleOwner: LifecycleOwner) {
+    fun startCamera(lifecycleOwner: LifecycleOwner, surfaceProvider: androidx.camera.core.Preview.SurfaceProvider? = null) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         
         cameraProviderFuture.addListener({
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
             val preview = Preview.Builder().build()
+            
+            surfaceProvider?.let {
+                preview.setSurfaceProvider(it)
+            }
             
             val imageAnalyzer = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)

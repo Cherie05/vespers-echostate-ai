@@ -9,14 +9,31 @@ import com.echostate.ai.ui.screens.TwoWayScreen
 import com.echostate.ai.ui.screens.VoiceModeScreen
 import com.echostate.ai.viewmodel.EchoStateViewModel
 
+import com.echostate.ai.ui.screens.CameraScreen
+import com.echostate.ai.ui.screens.LiveVoiceScreen
+
 @Composable
 fun AppNavigation(navController: NavHostController, viewModel: EchoStateViewModel) {
-    NavHost(navController = navController, startDestination = "voice_mode") {
-        composable("voice_mode") {
+    NavHost(navController = navController, startDestination = "home") {
+        composable("home") {
             VoiceModeScreen(
                 viewModel = viewModel,
                 onNavigateToBraille = { navController.navigate("braille_mode") },
-                onNavigateToTwoWay = { navController.navigate("two_way_mode") }
+                onNavigateToTwoWay = { navController.navigate("two_way_mode") },
+                onNavigateToCamera = { navController.navigate("camera_mode") },
+                onNavigateToVoice = { navController.navigate("live_voice") }
+            )
+        }
+        composable("camera_mode") {
+            CameraScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        composable("live_voice") {
+            LiveVoiceScreen(
+                viewModel = viewModel,
+                onBack = { navController.popBackStack() }
             )
         }
         composable("braille_mode") {
