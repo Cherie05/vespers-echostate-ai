@@ -46,7 +46,10 @@ class CameraManager(
     }
 
     private fun imageProxyToBitmap(imageProxy: ImageProxy): Bitmap {
-        // Convert ImageProxy to Bitmap (stubbed for brevity)
-        return Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
+        return try {
+            imageProxy.toBitmap()
+        } catch (_: Exception) {
+            Bitmap.createBitmap(imageProxy.width.coerceAtLeast(1), imageProxy.height.coerceAtLeast(1), Bitmap.Config.ARGB_8888)
+        }
     }
 }

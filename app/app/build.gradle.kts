@@ -1,17 +1,20 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 }
 
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+
 android {
     namespace = "com.echostate.ai"
     compileSdk = 34
-
-    val localProperties = java. util.Properties()
-    val localPropertiesFile = rootProject.file("local.properties")
-    if (localPropertiesFile.exists()) {
-        localProperties.load(java.io.FileInputStream(localPropertiesFile))
-    }
 
     defaultConfig {
         applicationId = "com.echostate.ai"
@@ -19,7 +22,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-        
+
         buildConfigField("String", "GOOGLE_GEN_AI_KEY", "\"${localProperties.getProperty("GOOGLE_GEN_AI_KEY", "")}\"")
         buildConfigField("String", "BACKEND_BASE_URL", "\"${localProperties.getProperty("BACKEND_BASE_URL", "http://10.0.2.2:8000")}\"")
         buildConfigField("String", "BACKEND_WS_URL", "\"${localProperties.getProperty("BACKEND_WS_URL", "ws://10.0.2.2:8000")}\"")
@@ -39,12 +42,18 @@ android {
             )
         }
     }
+    packaging {
+        jniLibs {
+            keepDebugSymbols.add("**/libmediapipe_tasks_vision_jni.so")
+            keepDebugSymbols.add("**/libimage_processing_util_jni.so")
+        }
+    }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
     buildFeatures {
         buildConfig = true
@@ -67,13 +76,13 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.5")
     
     // CameraX
-    val camerax_version = "1.3.0"
-    implementation("androidx.camera:camera-core:${camerax_version}")
-    implementation("androidx.camera:camera-camera2:${camerax_version}")
-    implementation("androidx.camera:camera-lifecycle:${camerax_version}")
-    implementation("androidx.camera:camera-view:${camerax_version}")
+    val cameraxVersion = "1.3.0"
+    implementation("androidx.camera:camera-core:$cameraxVersion")
+    implementation("androidx.camera:camera-camera2:$cameraxVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
+    implementation("androidx.camera:camera-view:$cameraxVersion")
 
-    // MediaPipe LLM Inference (placeholder versions)
+    // MediaPipe LLM Inference
     implementation("com.google.mediapipe:tasks-vision:0.10.9")
     
     // OkHttp for networking / websockets

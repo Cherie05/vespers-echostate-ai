@@ -34,7 +34,7 @@ class BrailleInputHandler(private val viewModel: EchoStateViewModel) {
         setOf(1, 3, 4, 6) to 'x',
         setOf(1, 3, 4, 5, 6) to 'y',
         setOf(1, 3, 5, 6) to 'z',
-        setOf(3) to ''', // Mocking space for dot 3 only in this simple map for UX testing
+        setOf(3) to '\'', // Apostrophe
         setOf(6) to ' '  // Space character
     )
 

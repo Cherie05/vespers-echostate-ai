@@ -24,6 +24,19 @@ class CloudMultimodalEngine {
     private val scope = CoroutineScope(Dispatchers.IO)
     private val backendBaseUrl = BuildConfig.BACKEND_BASE_URL
 
+    fun verifyConnection(onResult: (Boolean) -> Unit) {
+        scope.launch {
+            try {
+                val request = Request.Builder().url("$backendBaseUrl/health").build()
+                client.newCall(request).execute().use { response ->
+                    onResult(response.isSuccessful)
+                }
+            } catch (e: Exception) {
+                onResult(false)
+            }
+        }
+    }
+
     /**
      * IMAGE / VIDEO TO TEXT: Sends frame to /api/v1/vision/analyze-base64
      */

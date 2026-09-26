@@ -64,6 +64,11 @@ class LiveAudioEngine(private val context: Context) {
         webSocket?.send(haltSignal)
     }
 
+    fun speakOnline(text: String) {
+        val prompt = "{\"action\": \"text_prompt\", \"text\": \"$text\"}"
+        webSocket?.send(prompt)
+    }
+
     fun disconnect() {
         webSocket?.close(1000, "App closed")
     }

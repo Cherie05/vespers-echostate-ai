@@ -44,8 +44,9 @@ class LocalGemmaEngine(private val context: Context) {
         // val prompt = "Intent: $userIntent. Context: $localContext. Can you answer this safely and completely? Answer YES or NO."
         // val response = llmInference?.generateResponse(prompt)?.trim()?.uppercase()
         
-        // Mocking the decision logic based on keywords
-        return if (userIntent.contains("complex", ignoreCase = true) || userIntent.contains("crowd", ignoreCase = true)) {
+        return if (userIntent.contains("complex", ignoreCase = true) || 
+                   userIntent.contains("crowd", ignoreCase = true) ||
+                   localContext.contains("complex", ignoreCase = true)) {
             RoutingDecision.CLOUD
         } else {
             RoutingDecision.LOCAL

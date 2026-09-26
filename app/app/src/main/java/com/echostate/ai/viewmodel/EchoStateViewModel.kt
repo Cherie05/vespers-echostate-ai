@@ -60,6 +60,16 @@ class EchoStateViewModel : ViewModel() {
         brailleInputHandler = BrailleInputHandler(this)
     }
 
+    private val _backendStatus = MutableStateFlow("Checking connection...")
+    val backendStatus: StateFlow<String> = _backendStatus.asStateFlow()
+
+    fun verifyBackendConnection() {
+        _backendStatus.value = "Connecting to ${com.echostate.ai.BuildConfig.BACKEND_BASE_URL}..."
+        cloudEngine?.verifyConnection { isConnected ->
+            _backendStatus.value = if (isConnected) "Backend Connected" else "Backend Disconnected"
+        }
+    }
+
     fun updateBrailleText(newChar: Char) {
         _brailleInputText.value += newChar
     }

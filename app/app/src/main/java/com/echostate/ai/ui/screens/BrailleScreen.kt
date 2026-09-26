@@ -3,6 +3,7 @@ package com.echostate.ai.ui.screens
 import android.view.MotionEvent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -56,6 +57,15 @@ fun BrailleScreen(
                 color = Color.Gray,
                 fontSize = 14.sp
             )
+            Spacer(modifier = Modifier.height(24.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Button(onClick = onBack) {
+                    Text("Back")
+                }
+                Button(onClick = onSendToTwoWay) {
+                    Text("Send to Two-Way")
+                }
+            }
         }
     }
 }
