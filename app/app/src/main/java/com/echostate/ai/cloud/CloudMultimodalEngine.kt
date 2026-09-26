@@ -75,6 +75,35 @@ class CloudMultimodalEngine {
                 onResult("Network unavailable. Relying on local Gemma 4.")
             }
         }
+    fun askQuestion(prompt: String, onResult: (String) -> Unit) {
+        scope.launch {
+            try {
+                val url = "$backendBaseUrl/api/v1/vision/chat"
+                val jsonPayload = JSONObject().apply {
+                    put("prompt", prompt)
+                }
+
+                val request = Request.Builder()
+                    .url(url)
+                    .post(jsonPayload.toString().toRequestBody("application/json".toMediaType()))
+                    .build()
+
+                client.newCall(request).execute().use { response ->
+                    val responseStr = response.body?.string() ?: ""
+                    if (response.isSuccessful) {
+                        val json = JSONObject(responseStr)
+                        val reply = json.optString("description", "I heard you.")
+                        onResult(reply)
+                    } else {
+                        Log.e("CloudMultimodal", "Chat backend error: ${response.code}")
+                        onResult("Backend returned error ${response.code}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("CloudMultimodal", "Network error in chat call", e)
+                onResult("Network unavailable.")
+            }
+        }
     }
 
     /**

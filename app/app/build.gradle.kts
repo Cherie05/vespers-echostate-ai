@@ -46,6 +46,8 @@ android {
         jniLibs {
             keepDebugSymbols.add("**/libmediapipe_tasks_vision_jni.so")
             keepDebugSymbols.add("**/libimage_processing_util_jni.so")
+            // Android 15 (16KB) fix for unaligned mediapipe libraries
+            useLegacyPackaging = true
         }
     }
     compileOptions {

@@ -30,6 +30,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        viewModel.initializeEngines(this, this)
+
         requestPermissionLauncher.launch(
             arrayOf(
                 Manifest.permission.CAMERA,

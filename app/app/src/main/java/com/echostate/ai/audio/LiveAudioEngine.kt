@@ -21,7 +21,10 @@ class LiveAudioEngine(private val context: Context) {
     fun connectToGeminiLive() {
         scope.launch {
             // Uses Railway backend WebSocket proxy or local emulator
-            val wsUrl = "${BuildConfig.BACKEND_WS_URL}/ws/live"
+            // OkHttp requires ws:// and wss:// URLs to be passed to Request.Builder() 
+            // as http:// or https://. The framework handles upgrading the connection natively.
+            val baseUrl = BuildConfig.BACKEND_WS_URL.replace("ws://", "http://").replace("wss://", "https://")
+            val wsUrl = "$baseUrl/ws/live"
             Log.d("LiveAudioEngine", "Connecting to WebSocket gateway: $wsUrl")
 
             val request = Request.Builder()

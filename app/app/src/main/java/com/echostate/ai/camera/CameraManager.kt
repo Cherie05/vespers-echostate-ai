@@ -15,6 +15,11 @@ class CameraManager(
     private val context: Context,
     private val agentEngine: AgentLoopEngine
 ) {
+    var latestBitmap: Bitmap? = null
+        private set
+
+    fun captureCurrentFrame(): Bitmap? = latestBitmap
+
     fun startCamera(lifecycleOwner: LifecycleOwner, surfaceProvider: androidx.camera.core.Preview.SurfaceProvider? = null) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         
@@ -32,6 +37,7 @@ class CameraManager(
                 .also {
                     it.setAnalyzer(ContextCompat.getMainExecutor(context)) { imageProxy ->
                         val bitmap = imageProxyToBitmap(imageProxy)
+                        latestBitmap = bitmap
                         // Feed into the Sense-Decide-Act-Check loop
                         agentEngine.processCameraFrame(bitmap)
                         imageProxy.close()

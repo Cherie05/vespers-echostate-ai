@@ -38,9 +38,17 @@ fun CameraScreen(
                 Text(
                     text = currentSpeech,
                     color = Color.Yellow,
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.titleMedium
                 )
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = { viewModel.analyzeCurrentCameraScene() },
+                    modifier = Modifier.fillMaxWidth().height(60.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
+                ) {
+                    Text("📸 Describe Scene with Gemini", color = Color.White, style = MaterialTheme.typography.titleMedium)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = onBack,
                     modifier = Modifier.fillMaxWidth(),

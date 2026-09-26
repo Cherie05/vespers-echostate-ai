@@ -14,9 +14,12 @@ import com.echostate.ai.cloud.CloudMultimodalEngine
 import com.echostate.ai.llm.AgentLoopEngine
 import com.echostate.ai.llm.LocalGemmaEngine
 
+import android.speech.tts.TextToSpeech
+import java.util.Locale
+
 class EchoStateViewModel : ViewModel() {
     
-    private val _spokenText = MutableStateFlow("Listening...")
+    private val _spokenText = MutableStateFlow("Ready.")
     val spokenText: StateFlow<String> = _spokenText.asStateFlow()
 
     private val _brailleInputText = MutableStateFlow("")
@@ -28,6 +31,7 @@ class EchoStateViewModel : ViewModel() {
     private var localGemma: LocalGemmaEngine? = null
     private var agentEngine: AgentLoopEngine? = null
     private var cameraManager: CameraManager? = null
+    private var textToSpeech: TextToSpeech? = null
     
     var brailleInputHandler: BrailleInputHandler? = null
 
@@ -35,6 +39,13 @@ class EchoStateViewModel : ViewModel() {
         hapticManager = HapticFeedbackManager(context)
         audioEngine = LiveAudioEngine(context)
         cloudEngine = CloudMultimodalEngine()
+        
+        // Initialize Android Text-To-Speech for real audio feedback
+        textToSpeech = TextToSpeech(context) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                textToSpeech?.language = Locale.US
+            }
+        }
         
         // Track 2: Connect to Gemini Live audio gateway on Railway/Local backend
         audioEngine?.connectToGeminiLive()
@@ -54,7 +65,6 @@ class EchoStateViewModel : ViewModel() {
         
         // Setup Camera for Multimodal input (10 FPS)
         cameraManager = CameraManager(context, agentEngine!!)
-        // Camera will be started when CameraScreen mounts
         
         // Setup Braille Screen Input
         brailleInputHandler = BrailleInputHandler(this)
@@ -70,6 +80,11 @@ class EchoStateViewModel : ViewModel() {
         }
     }
 
+    fun speak(text: String) {
+        _spokenText.value = text
+        textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "echo_speech")
+    }
+
     fun updateBrailleText(newChar: Char) {
         _brailleInputText.value += newChar
     }
@@ -80,28 +95,48 @@ class EchoStateViewModel : ViewModel() {
     
     fun simulateCameraCentered() {
         hapticManager?.vibrateCentered()
-        _spokenText.value = "Document centered. Reading: 'Ibuprofen 200mg'."
-        cloudEngine?.synthesizeSpeech("Document centered. Ibuprofen 200mg") {
-            // Audio ready
-        }
+        speak("Document centered. Reading: 'Ibuprofen 200mg'.")
     }
 
     fun startCamera(lifecycleOwner: LifecycleOwner, surfaceProvider: androidx.camera.core.Preview.SurfaceProvider) {
         cameraManager?.startCamera(lifecycleOwner, surfaceProvider)
     }
 
+    fun analyzeCurrentCameraScene() {
+        val bitmap = cameraManager?.captureCurrentFrame()
+        if (bitmap == null) {
+            speak("Camera is warming up. Please aim camera at your surroundings.")
+            return
+        }
+        hapticManager?.vibrateCentered()
+        speak("Analyzing scene with Gemini 3.8 Flash...")
+        cloudEngine?.analyzeScene(bitmap) { description ->
+            speak(description)
+        }
+    }
+
     fun startVoiceMode() {
-        _spokenText.value = "Voice Assistant Active..."
-        audioEngine?.speakOnline("{\"action\": \"text_prompt\", \"text\": \"Hello, how can I help you today?\"}")
+        speak("Voice Assistant Active. Ask me anything about what's around you.")
+    }
+
+    fun askVoiceAssistant(query: String) {
+        hapticManager?.vibrateCentered()
+        speak("Thinking...")
+        cloudEngine?.askQuestion(query) { answer ->
+            speak(answer)
+        }
     }
 
     fun captureImageForVoice(bitmap: android.graphics.Bitmap) {
-        _spokenText.value = "Analyzing scene..."
+        speak("Analyzing scene...")
         cloudEngine?.analyzeScene(bitmap) { description ->
-            _spokenText.value = description
-            cloudEngine?.synthesizeSpeech(description) {
-                // Play audio
-            }
+            speak(description)
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        textToSpeech?.stop()
+        textToSpeech?.shutdown()
     }
 }
