@@ -40,7 +40,7 @@ class CloudMultimodalEngine {
     /**
      * IMAGE / VIDEO TO TEXT: Sends frame to /api/v1/vision/analyze-base64
      */
-    fun analyzeScene(bitmap: Bitmap, onResult: (String) -> Unit) {
+    fun analyzeScene(bitmap: Bitmap, customPrompt: String? = null, onResult: (String) -> Unit) {
         scope.launch {
             try {
                 val outputStream = ByteArrayOutputStream()
@@ -51,7 +51,8 @@ class CloudMultimodalEngine {
                 val jsonPayload = JSONObject().apply {
                     put("image_base64", base64Image)
                     put("mime_type", "image/jpeg")
-                    put("prompt", "Analyze what is in front of the blind user. Highlight immediate obstacles or doors.")
+                    val promptText = customPrompt ?: "Analyze what is in front of the blind user. Highlight immediate obstacles or doors."
+                    put("prompt", promptText)
                 }
 
                 val request = Request.Builder()
