@@ -27,10 +27,10 @@ class EchoStateViewModel : ViewModel() {
 
     private var hapticManager: HapticFeedbackManager? = null
     private var audioEngine: LiveAudioEngine? = null
-    private var cloudEngine: CloudMultimodalEngine? = null
     private var localGemma: LocalGemmaEngine? = null
     private var agentEngine: AgentLoopEngine? = null
-    private var cameraManager: CameraManager? = null
+    var cameraManager: CameraManager? = null
+    var cloudEngine: CloudMultimodalEngine? = null
     private var textToSpeech: TextToSpeech? = null
     
     var brailleInputHandler: BrailleInputHandler? = null
@@ -116,7 +116,7 @@ class EchoStateViewModel : ViewModel() {
     }
 
     fun startVoiceMode() {
-        speak("Voice Assistant Active. Ask me anything about what's around you.")
+        speak("Voice Assistant Active. Ask me anything.")
     }
 
     fun askVoiceAssistant(query: String) {

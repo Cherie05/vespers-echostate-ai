@@ -12,9 +12,13 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.echostate.ai.viewmodel.EchoStateViewModel
 import androidx.compose.ui.unit.dp
 
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.ui.input.pointer.pointerInput
+import android.content.Intent
+import android.os.Bundle
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import java.util.Locale
+import androidx.compose.ui.Alignment
 
 @Composable
 fun CameraScreen(
@@ -24,6 +28,58 @@ fun CameraScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
     val currentSpeech = viewModel.spokenText.collectAsState().value
+    var isListening by remember { mutableStateOf(false) }
+
+    val speechRecognizer = remember {
+        SpeechRecognizer.createSpeechRecognizer(context)
+    }
+
+    val intent = remember {
+        Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+        }
+    }
+
+    DisposableEffect(Unit) {
+        speechRecognizer.setRecognitionListener(object : RecognitionListener {
+            override fun onReadyForSpeech(params: Bundle?) {
+                isListening = true
+                viewModel.speak("Ask about what is in front of you.")
+            }
+            override fun onBeginningOfSpeech() {}
+            override fun onRmsChanged(rmsdB: Float) {}
+            override fun onBufferReceived(buffer: ByteArray?) {}
+            override fun onEndOfSpeech() {
+                isListening = false
+            }
+            override fun onError(error: Int) {
+                isListening = false
+                viewModel.speak("Could not hear you.")
+            }
+            override fun onResults(results: Bundle?) {
+                isListening = false
+                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                if (!matches.isNullOrEmpty()) {
+                    val spokenText = matches[0]
+                    
+                    // We capture the frame AND ask the specific question about it!
+                    val bitmap = viewModel.cameraManager?.captureCurrentFrame()
+                    if (bitmap != null) {
+                        viewModel.speak("Analyzing...")
+                        viewModel.cloudEngine?.analyzeScene(bitmap, spokenText) { answer ->
+                            viewModel.speak(answer)
+                        }
+                    } else {
+                        viewModel.speak("Camera not ready.")
+                    }
+                }
+            }
+            override fun onPartialResults(partialResults: Bundle?) {}
+            override fun onEvent(eventType: Int, params: Bundle?) {}
+        })
+        onDispose { speechRecognizer.destroy() }
+    }
 
     Box(
         modifier = Modifier
@@ -31,7 +87,12 @@ fun CameraScreen(
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
+                        // Short Tap -> Standard scene description
                         viewModel.analyzeCurrentCameraScene()
+                    },
+                    onLongPress = {
+                        // Long Press -> Ask a specific question about the scene
+                        speechRecognizer.startListening(intent)
                     }
                 )
             }
@@ -61,7 +122,7 @@ fun CameraScreen(
         // Semi-transparent overlay to show instructions and text
         Surface(
             color = Color.Black.copy(alpha = 0.6f),
-            modifier = Modifier.fillMaxWidth().align(androidx.compose.ui.Alignment.BottomCenter)
+            modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
