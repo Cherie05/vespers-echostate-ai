@@ -1,0 +1,70 @@
+# ==============================================================================
+# Root .gitignore - EchoState AI (GDG DeepMind Hackathon)
+# Ensures zero secret leakage for both FastAPI Backend & Android Mobile Client
+# ==============================================================================
+
+# --- Secrets & Environment Variables (CRITICAL) ---
+.env
+.env.*
+*.env
+backend/.env
+backend/.env.*
+local.properties
+app/local.properties
+secrets.properties
+*.key
+*.pem
+*.keystore
+*.jks
+
+# Whitelist safe template examples
+!.env.example
+!*.env.example
+!backend/.env.example
+!app/local.properties.example
+
+# --- Python & FastAPI Backend ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- Android Mobile App ---
+*.iml
+.gradle/
+app/.gradle/
+build/
+app/build/
+app/app/build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+
+# --- OS & IDE Configurations ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.idea/
+.idea/*
+*.ipr
+*.iws
+.vscode/
+*.swp
+*~
