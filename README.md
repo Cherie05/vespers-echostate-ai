@@ -26,6 +26,13 @@
 
 ---
 
+## 🔗 Live Demo Links
+- **Android APK Download:** [Download EchoState AI Alpha (v1.0)](https://github.com/Cherie05/vespers-echostate-ai/releases/latest)
+- **Production Backend API Docs:** [https://vespers-echostate-ai-production.up.railway.app/docs](https://vespers-echostate-ai-production.up.railway.app/docs)
+- **Production WebSocket Endpoint:** `wss://vespers-echostate-ai-production.up.railway.app/ws/live`
+
+---
+
 ## 🌟 Vision & Overview
 
 Traditional assistive tools force visually impaired users to interact with interfaces designed for sighted people—requiring them to hunt for tiny on-screen buttons, deal with frustrating latency, and expose private documents to remote cloud servers.
