@@ -58,8 +58,8 @@ async def analyze_scene_base64(req: Base64VisionRequest):
     image_bytes = base64.b64decode(req.image_base64) if req.image_base64 else None
     video_bytes = base64.b64decode(req.video_base64) if req.video_base64 else None
 
-    if not image_bytes and not video_bytes:
-        raise HTTPException(status_code=400, detail="No media data provided")
+    if not image_bytes and not video_bytes and not req.prompt:
+        raise HTTPException(status_code=400, detail="No media data or prompt provided")
 
     result = await gemini_service.analyze_multimodal(
         image_bytes=image_bytes,
@@ -71,6 +71,21 @@ async def analyze_scene_base64(req: Base64VisionRequest):
     if not result.get("success"):
         raise HTTPException(status_code=502, detail=result.get("error", "Vision analysis failed"))
 
+    return result
+
+
+class ChatPromptRequest(BaseModel):
+    prompt: str
+
+
+@router.post("/chat")
+async def text_chat(req: ChatPromptRequest):
+    """
+    Standard text conversational endpoint with Gemini 3.8 Flash.
+    """
+    result = await gemini_service.analyze_multimodal(prompt=req.prompt)
+    if not result.get("success"):
+        raise HTTPException(status_code=502, detail=result.get("error", "Chat failed"))
     return result
 
 
